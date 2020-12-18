@@ -2,7 +2,7 @@ import * as restify from 'restify'
 import {User} from '../users/users.model'
 import * as jwt from 'jsonwebtoken'
 import {environment} from '../common/evironment'
-import {InvalidCredentialsError} from 'restify-errors'
+import {NotAuthorizedError} from 'restify-errors'
 
 export const tokenParser: restify.RequestHandler = (req, resp, next)=>{
     const token = extractToken(req)    
@@ -31,7 +31,7 @@ function extractToken(req: restify.Request){
 function applyBearer (req: restify.Request, next: restify.Next): (error, decoded)=>void{
     return (error, decoded)=>{
         if(error){
-            next(new InvalidCredentialsError(error))
+            next(new NotAuthorizedError(error))
         }else{
             let user = new User()
             user.email = decoded.sub

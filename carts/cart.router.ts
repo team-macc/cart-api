@@ -53,13 +53,13 @@ class CartsRouter extends ModelRouter<Cart>{
     applyRoutes(application: restify.Server) {
         console.log('****************CART ROUTERS****************')        
         application.get('/carts',[authorize, this.findByEmail, this.findAll])
-        application.get('/carts/:id', [this.validateId, this.findById])
-        application.post('/carts', this.save)
-        application.put('/carts/:id', [this.validateId,this.replace])
-        application.patch('/carts/:id', [this.validateId,this.update])
-        application.del('/carts/:id', [this.validateId,this.delete])        
-        application.get('/carts/:id/items', [this.validateId,this.findItems])
-        application.put('/carts/:id/items', [this.validateId, this.replaceItems])       
+        application.get('/carts/:id', [authorize,this.validateId, this.findById])
+        application.post('/carts',[authorize, this.save])
+        application.put('/carts/:id', [authorize,this.validateId,this.replace])
+        application.patch('/carts/:id', [authorize,this.validateId,this.update])
+        application.del('/carts/:id', [authorize,this.validateId,this.delete])        
+        application.get('/carts/:id/items', [authorize,this.validateId,this.findItems])
+        application.put('/carts/:id/items', [authorize,this.validateId, this.replaceItems])       
     }}
 
 export const cartsRouter = new CartsRouter()
