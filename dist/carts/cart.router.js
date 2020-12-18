@@ -48,13 +48,13 @@ class CartsRouter extends model_router_1.ModelRouter {
     applyRoutes(application) {
         console.log('****************CART ROUTERS****************');
         application.get('/carts', [authz_handler_1.authorize, this.findByEmail, this.findAll]);
-        application.get('/carts/:id', [this.validateId, this.findById]);
-        application.post('/carts', this.save);
-        application.put('/carts/:id', [this.validateId, this.replace]);
-        application.patch('/carts/:id', [this.validateId, this.update]);
-        application.del('/carts/:id', [this.validateId, this.delete]);
-        application.get('/carts/:id/items', [this.validateId, this.findItems]);
-        application.put('/carts/:id/items', [this.validateId, this.replaceItems]);
+        application.get('/carts/:id', [authz_handler_1.authorize, this.validateId, this.findById]);
+        application.post('/carts', [authz_handler_1.authorize, this.save]);
+        application.put('/carts/:id', [authz_handler_1.authorize, this.validateId, this.replace]);
+        application.patch('/carts/:id', [authz_handler_1.authorize, this.validateId, this.update]);
+        application.del('/carts/:id', [authz_handler_1.authorize, this.validateId, this.delete]);
+        application.get('/carts/:id/items', [authz_handler_1.authorize, this.validateId, this.findItems]);
+        application.put('/carts/:id/items', [authz_handler_1.authorize, this.validateId, this.replaceItems]);
     }
 }
 exports.cartsRouter = new CartsRouter();

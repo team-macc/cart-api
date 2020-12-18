@@ -30,7 +30,7 @@ function extractToken(req) {
 function applyBearer(req, next) {
     return (error, decoded) => {
         if (error) {
-            next(new restify_errors_1.InvalidCredentialsError(error));
+            next(new restify_errors_1.NotAuthorizedError(error));
         }
         else {
             let user = new users_model_1.User();
