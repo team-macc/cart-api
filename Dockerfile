@@ -17,6 +17,6 @@ RUN tsc
 RUN ls -lha .
 COPY dist .
 RUN ls -lha .
-EXPOSE 3000
+EXPOSE 3001
 
 CMD [ "pm2-runtime", "main.js" ]

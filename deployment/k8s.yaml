@@ -8,7 +8,7 @@ spec:
   selector:
     app: cart
   ports:
-    - port: 8080
+    - port: 3001
       name: http
   type: NodePort
 ---
@@ -31,8 +31,8 @@ spec:
     spec:
       containers:
       - name: cart
-        image: samuelpereiradesouza/cart:2
+        image: samuelpereiradesouza/cart:9
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
       restartPolicy: Always
 ---
