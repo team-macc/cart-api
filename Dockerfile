@@ -14,9 +14,8 @@ RUN npm install tsc -g
 RUN npm ic --only=production
 RUN tsc
 
-RUN ls -lha .
 COPY dist .
-RUN ls -lha .
+
 EXPOSE 3001
 
 CMD [ "pm2-runtime", "main.js" ]

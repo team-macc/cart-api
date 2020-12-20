@@ -1,12 +1,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: cart
+  name: cart-api
   labels:
-    app: cart
+    app: cart-api
 spec:
   selector:
-    app: cart
+    app: cart-api
   ports:
     - port: 3001
       name: http
@@ -15,23 +15,23 @@ spec:
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: cart
+  name: cart-api
 spec:
   selector:
     matchLabels:
-      app: cart
+      app: cart-api
   replicas: 1
   template:
     metadata:
       annotations: 
         sidecar.istio.io/inject: "true"      
       labels:
-        app: cart
+        app: cart-api
         version: v1
     spec:
       containers:
-      - name: cart
-        image: samuelpereiradesouza/cart:9
+      - name: cart-api
+        image: samuelpereiradesouza/cart-api:3
         ports:
         - containerPort: 3001
       restartPolicy: Always
