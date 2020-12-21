@@ -1,8 +1,10 @@
 import * as restify from 'restify';
-import {Cart} from './carts.model'
+import {Cart, CartItem} from './carts.model'
 import {ModelRouter} from '../common/model-router'
 import { NotFoundError } from 'restify-errors';
 import {authorize} from '../security/authz.handler'
+import * as restifyClient from 'restify-clients'
+import {Order} from './order.model'
 
 class CartsRouter extends ModelRouter<Cart>{
     constructor(){
@@ -49,6 +51,69 @@ class CartsRouter extends ModelRouter<Cart>{
         }
       }
 
+    pedidoParser=(cart:Cart):Order=>{
+        let order = new Order()
+        order.userEmail = cart.userEmail
+        order.date = new Date()
+        order.status = 'Waiting'
+        if(cart.items){
+            cart.items.forEach(item=>{
+                item._id=undefined
+                order.items.push(item)
+            })
+        }
+
+        return order
+    }
+
+       
+    fecharPedido = (req, resp, next)=>{
+        const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmZWxpcGUudGl0b25lbEBnbWFpbC5jb20iLCJyb2xlcyI6WyJBZG1pbiJdLCJpYXQiOjE2MDgzMTc0MTMsImV4cCI6MTY2ODMxNzQxM30.-ylgexuKIYOpI6EeGonfbG0s6swyutZGziA4ActCSGo'
+        let client = restifyClient.createJsonClient({
+            url: 'http://172.17.0.3:3002'
+          })
+
+          let optionsPost = {
+            path: '/orders',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            retry: {
+              'retries': 0
+            },
+            agent: false
+          }
+
+          let optionsPut = {
+            path: `/carts/${req.params.id}/items`,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token
+            },
+            retry: {
+              'retries': 0
+            },
+            agent: false
+          }
+
+       Cart.findById(req.params.id).then(
+           cart=>{                              
+               client.post(optionsPost, this.pedidoParser(cart), function(err, req, res, obj){
+                   if(err){
+                       return next(err)
+                   }
+                resp.json(obj)
+                cart.items = []
+                cart.save()
+                return next()
+               })
+               
+           }
+       ).catch(next)
+       
+    }
+
 
     applyRoutes(application: restify.Server) {
         console.log('****************CART ROUTERS****************')        
@@ -59,7 +124,8 @@ class CartsRouter extends ModelRouter<Cart>{
         application.patch('/carts/:id', [authorize,this.validateId,this.update])
         application.del('/carts/:id', [authorize,this.validateId,this.delete])        
         application.get('/carts/:id/items', [authorize,this.validateId,this.findItems])
-        application.put('/carts/:id/items', [authorize,this.validateId, this.replaceItems])       
+        application.put('/carts/:id/items', [authorize,this.validateId, this.replaceItems])
+        application.post('/carts/:id/fechar',[authorize, this.fecharPedido])     
     }}
 
 export const cartsRouter = new CartsRouter()

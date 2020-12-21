@@ -41,7 +41,8 @@ const cartSchema = new mongoose.Schema(
     {
         userEmail:{
             type: String,
-            required: true
+            required: true,
+            unique: true
         },
         items: {
             type: [cartItemSchema],

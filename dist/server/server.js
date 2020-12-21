@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const error_handler_1 = require("./error.handler");
 const merge_patch_parser_1 = require("./merge-patch.parser");
 const token_parser_1 = require("../security/token.parser");
+const corsMiddleware = require("restify-cors-middleware");
 class Server {
     initializeDb() {
         mongoose.Promise = global.Promise;
@@ -21,6 +22,15 @@ class Server {
                     name: 'cart-api',
                     version: '1.0.0'
                 });
+                const corsOptions = {
+                    preflightMaxAge: 10,
+                    origins: ['*'],
+                    allowHeaders: ['Authorization'],
+                    exposeHeaders: []
+                };
+                const cors = corsMiddleware(corsOptions);
+                this.application.pre(cors.preflight);
+                this.application.use(cors.actual);
                 this.application.use(restify.plugins.queryParser());
                 this.application.use(restify.plugins.bodyParser());
                 this.application.use(merge_patch_parser_1.mergePatchBodyParser);

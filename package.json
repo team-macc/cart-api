@@ -11,13 +11,16 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^14.14.14",
-    "@types/restify": "^8.4.2"
+    "@types/restify": "^8.4.2",
+    "@types/restify-cors-middleware": "^1.0.1"
   },
   "dependencies": {
     "bcrypt": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.8",
     "restify": "^8.5.1",
+    "restify-clients": "^3.1.0",
+    "restify-cors-middleware": "^1.1.1",
     "restify-errors": "^8.0.2"
   }
 }
