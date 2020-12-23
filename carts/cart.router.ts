@@ -1,10 +1,12 @@
 import * as restify from 'restify';
 import {Cart, CartItem} from './carts.model'
 import {ModelRouter} from '../common/model-router'
-import { NotFoundError } from 'restify-errors';
+import { NotFoundError } from 'restify-errors'
 import {authorize} from '../security/authz.handler'
 import * as restifyClient from 'restify-clients'
 import {Order} from './order.model'
+import { environment } from '../common/evironment'
+import {InvalidContentError} from 'restify-errors'
 
 class CartsRouter extends ModelRouter<Cart>{
     constructor(){
@@ -66,39 +68,71 @@ class CartsRouter extends ModelRouter<Cart>{
         return order
     }
 
-       
+    // checkStock = (cart:Cart)=>{
+    //     let client = restifyClient.createJsonClient({
+    //         url: environment.services.stock.url
+    //       })          
+
+    //       let products = []
+    //       let optionsGet          
+    //                 cart.items.forEach(item=>{
+    //                     optionsGet = {
+    //                         path: `/stock/${item.idProduto}`,
+    //                         headers: {
+    //                           'Content-Type': 'application/json',
+    //                           'Authorization': environment.services.stock.token
+    //                         },
+    //                         retry: {
+    //                           'retries': 0
+    //                         },
+    //                         agent: false
+    //                       }
+    //                         client.get(optionsGet, function(err, req, res, obj){              
+    //                             if(err){
+    //                                 console.log(err)
+    //                             }
+    //                             // console.log(obj)
+    //                             products.push(obj)
+    //                             console.log(products)
+    //                             })
+    //                       })
+    //                       console.log(products)                           
+                   
+    // }
+          
     fecharPedido = (req, resp, next)=>{
-        const token = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmZWxpcGUudGl0b25lbEBnbWFpbC5jb20iLCJyb2xlcyI6WyJBZG1pbiJdLCJpYXQiOjE2MDgzMTc0MTMsImV4cCI6MTY2ODMxNzQxM30.-ylgexuKIYOpI6EeGonfbG0s6swyutZGziA4ActCSGo'
         let client = restifyClient.createJsonClient({
-            url: 'http://172.17.0.3:3002'
+            url: environment.services.order.url
           })
 
           let optionsPost = {
             path: '/orders',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': token
+              'Authorization': environment.services.order.token
             },
             retry: {
-              'retries': 0
+              'retries': 1
             },
             agent: false
           }
-
-          let optionsPut = {
-            path: `/carts/${req.params.id}/items`,
+          
+          let optionsGet = {
+            path: `/stock/${req.params.id}/items`,
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': token
+              'Authorization': environment.services.order.token
             },
             retry: {
-              'retries': 0
+              'retries': 1
             },
             agent: false
           }
-
+          
        Cart.findById(req.params.id).then(
-           cart=>{                              
+           cart=>{  
+               if(cart.items.length>0){
+                   
                client.post(optionsPost, this.pedidoParser(cart), function(err, req, res, obj){
                    if(err){
                        return next(err)
@@ -106,9 +140,12 @@ class CartsRouter extends ModelRouter<Cart>{
                 resp.json(obj)
                 cart.items = []
                 cart.save()
+                
                 return next()
                })
-               
+            }else{
+                return next(new InvalidContentError('Empty cart'))
+            }
            }
        ).catch(next)
        
@@ -125,7 +162,7 @@ class CartsRouter extends ModelRouter<Cart>{
         application.del('/carts/:id', [authorize,this.validateId,this.delete])        
         application.get('/carts/:id/items', [authorize,this.validateId,this.findItems])
         application.put('/carts/:id/items', [authorize,this.validateId, this.replaceItems])
-        application.post('/carts/:id/fechar',[authorize, this.fecharPedido])     
+        application.post('/carts/:id/order',[authorize, this.fecharPedido])
     }}
 
 export const cartsRouter = new CartsRouter()
